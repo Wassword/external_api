@@ -4,69 +4,51 @@ const axios = require('axios');
 const path = require('path');
 require('dotenv').config(); //load envoirnment varaibles from .env file
 
-//express app setup
-const app = express();
-const PORT =process.env.PORT || 3000;
 
 // Middleware to parse JSON bodies
 app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
 
+const cors=require("cors");
+const corsOptions ={
+origin:'*', 
+credentials:true,            //access-control-allow-credentials:true
+optionSuccessStatus:200,
+};
+app.use(cors(corsOptions));
 
-//serve statice file as html , css etc
-app.use(express.static(path.join(__dirname, 'external_api')));
-
-//set up main route 
-app.get('/', (req, res) => {
-    res.sendFile(path.join(__dirname, 'external_api', index.html));
-});
-
-app.post('/fetch-data', async (req, res) => {
-    const userInput = req.body.query;
-    const options = {
-        method: 'Post',
-        apiUrl: 'https://chatgpt-42.p.rapidapi.com/conversationgpt4-2',
-        headers: {
-            'Content-Type': 'appilication/json',
-            'x-rapidapi-host': 'chatgpt-42.p.rapidapi.com',
-            'x-rapidapi-key': process.env.RAPIDAPI_KEY
-        },
-        data: {
-            messages:[{role:"user", content: userInput }],
-            system_prompt: "",
-            temperature: 0.7
-        }
-    };
-    try {
-        const response = await axios.request(options);
-        const data = response.data;
-        res.json(data);
-    }catch (error) {
-    res.status(500).send('Erro fetching date from API');
-
-}
-// Event listener for form submission
-document.getElementById('query-form').addEventListener('submit', async function(e){
-    e.preventDefault();
-    const query = document.getElementById('query').value;
-
-    try {
-        const response = await axios.psot('/fetch-data', { query});
-        const data = response.data;
-
-        //result
-        const resultDiv = document.getElementById('result');
-        resultDiv.innerHTML = `<pre>${JSON.stringify(data, null, 2)}</pre>`;
-    } catch(error) {
-        console.log('Error fetching data', error);
-        document.getElementById('result').innerText = 'Error fetchng data from API';
+const options = {
+    method: 'GET',
+    url: 'https://wildlife-live1.p.rapidapi.com/news',
+    params: {
+        format: 'json',
+        code: 'it'
+},
+headers: {
+    'x-rapidapi-key': 'a14183dbd4msh7e4ab65f0021c4dp166829jsn95fdb07c40c6',
+    'x-rapidapi-host': 'wildlife-live1.p.rapidapi.com'
     }
-});
+};
+// Route to fetch user data from an external API
+app.get('/:id',async (req, res) => {
+try {
+options.params.code = req.params.id; //for country codes
 
+
+// Making a GET request using axios
+const response = await axios.request(options);
+
+// Sending the response data back to the client
+res.json(response.data);
+} catch (error) {
+console.error('Error fetching data:', error);
+
+// Error handling if the API call fails
+res.status(500).json({ message: 'Error fetching data' });
+}
 });
-app.listen(PORT, () => {
-    console.log(`Server is running on port ${PORT}`);
-});
+const PORT = 3000;
+// Start the server
+app.listen(PORT, () => console.log(`Server running on http://localhost:${PORT}`));
 
 
 

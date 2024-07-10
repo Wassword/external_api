@@ -4,7 +4,7 @@ const axios = require('axios');
 const app= express();
 const path = require('path');
 require('dotenv').config(); //load envoirnment varaibles from .env file
-
+app.use(express.static(path.join(__dirname, 'public')));
 
 // Middleware to parse JSON bodies
 app.use(express.json());
